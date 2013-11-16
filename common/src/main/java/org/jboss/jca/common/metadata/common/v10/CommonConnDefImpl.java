@@ -84,6 +84,9 @@ public class CommonConnDefImpl implements CommonConnDef
 
    /** isXA */
    protected final Boolean isXA;
+   static {
+      System.out.println("CommonConnDefImpl that includes JBJCA-1073 changes but hard codes isXA to false");
+   }
 
    /**
     * Create a new ConnectionDefinition.
@@ -128,7 +131,8 @@ public class CommonConnDefImpl implements CommonConnDef
       this.validation = validation;
       this.security = security;
       this.recovery = recovery;
-      this.isXA = isXA;
+      //this.isXA = isXA;
+       this.isXA = null;
    }
 
    /**
@@ -266,7 +270,7 @@ public class CommonConnDefImpl implements CommonConnDef
    @Override
    public final Boolean isXa()
    {
-      return (pool instanceof CommonXaPool) || isXA != null ? isXA : Boolean.FALSE;
+       return (pool instanceof CommonXaPool);  // || isXA != null ? isXA : Boolean.FALSE;
    }
 
    @Override
