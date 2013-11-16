@@ -288,6 +288,12 @@ public class TransactionSynchronizer implements Synchronization
 
       if (lock != null)
          lock.unlock();
+      else {
+          throw new IllegalStateException("unlock of transaction for " + tx +
+                  " via System.identityHashCode(tx) = " + idx+
+                  " failed to locate tx to unlock");
+      }
+
    }
 
    /**
@@ -329,8 +335,20 @@ public class TransactionSynchronizer implements Synchronization
 
       // Cleanup the maps
       Integer idx = Integer.valueOf(System.identityHashCode(tx));
-      txSynchs.remove(idx);
-      locks.remove(idx);
+      Object removed = txSynchs.remove(idx);
+      if (removed == null) {
+          throw new IllegalStateException("remove of transaction for " + tx +
+                  " via System.identityHashCode(tx) = " + idx+
+                  " failed to actually remove anything, recalc identityHashCode(tx) is now " +
+                  System.identityHashCode(tx) +",  txSynchs size=" +  txSynchs.size());
+      }
+      removed = locks.remove(idx);
+       if (removed == null) {
+          throw new IllegalStateException("remove of locks for " + tx +
+               " via System.identityHashCode(tx) = " + idx+
+               " failed to actually remove anything, recalc identityHashCode(tx) is now " +
+               System.identityHashCode(tx) + "locks size= " + locks.size());
+   }
    }
 
    /**
