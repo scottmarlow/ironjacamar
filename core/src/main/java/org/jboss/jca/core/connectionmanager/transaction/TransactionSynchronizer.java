@@ -56,12 +56,12 @@ public class TransactionSynchronizer implements Synchronization
    private static CoreLogger log = Logger.getMessageLogger(CoreLogger.class, TransactionSynchronizer.class.getName());
 
    /** The transaction synchronizations */
-   private static ConcurrentMap<Integer, TransactionSynchronizer> txSynchs =
-      new ConcurrentHashMap<Integer, TransactionSynchronizer>();
+   private static ConcurrentMap<TxIndexWrapper, TransactionSynchronizer> txSynchs =
+      new ConcurrentHashMap<TxIndexWrapper, TransactionSynchronizer>();
    
    /** The locks */
-   private static ConcurrentMap<Integer, Lock> locks =
-      new ConcurrentHashMap<Integer, Lock>();
+   private static ConcurrentMap<TxIndexWrapper, Lock> locks =
+      new ConcurrentHashMap<TxIndexWrapper, Lock>();
    
    /** The transaction */
    private Transaction tx;
@@ -192,7 +192,7 @@ public class TransactionSynchronizer implements Synchronization
                                                                    TransactionSynchronizationRegistry tsr)
       throws SystemException, RollbackException
    {
-      Integer idx = Integer.valueOf(System.identityHashCode(tx));
+      TxIndexWrapper idx = new TxIndexWrapper(tx);
       TransactionSynchronizer result = txSynchs.get(idx);
       if (result == null)
       {
@@ -222,7 +222,7 @@ public class TransactionSynchronizer implements Synchronization
     */
    public static Synchronization getCCMSynchronization(Transaction tx)
    {
-      Integer idx = Integer.valueOf(System.identityHashCode(tx));
+      TxIndexWrapper idx = new TxIndexWrapper(tx);
       TransactionSynchronizer ts = txSynchs.get(idx);
       if (ts != null)
          return ts.ccmSynch;  
@@ -254,7 +254,7 @@ public class TransactionSynchronizer implements Synchronization
     */
    public static void lock(Transaction tx)
    {
-      Integer idx = Integer.valueOf(System.identityHashCode(tx));
+      TxIndexWrapper idx = new TxIndexWrapper(tx);
       Lock lock = locks.get(idx);
       if (lock == null)
       {
@@ -283,7 +283,7 @@ public class TransactionSynchronizer implements Synchronization
     */
    public static void unlock(Transaction tx)
    {
-      Integer idx = Integer.valueOf(System.identityHashCode(tx));
+      TxIndexWrapper idx = new TxIndexWrapper(tx);
       Lock lock = locks.get(idx);
 
       if (lock != null)
@@ -328,7 +328,7 @@ public class TransactionSynchronizer implements Synchronization
       }
 
       // Cleanup the maps
-      Integer idx = Integer.valueOf(System.identityHashCode(tx));
+      TxIndexWrapper idx = new TxIndexWrapper(tx);
       txSynchs.remove(idx);
       locks.remove(idx);
    }
