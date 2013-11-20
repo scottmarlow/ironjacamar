@@ -336,17 +336,20 @@ public class TransactionSynchronizer implements Synchronization
       }
 
       // Cleanup the maps -- only trust TransactionSynchronizer
-      boolean found = false;
+      // first try to remove using the original transaction (transaction.hashCode() may of been mutated after completion)
+      boolean found = (null != records.remove(tx));
 
-      Iterator<Map.Entry<Transaction, Record>> iterator = records.entrySet().iterator();
-      while (!found && iterator.hasNext())
-      {
-         Map.Entry<Transaction, Record> next = iterator.next();
-         if (next.getValue().getTransactionSynchronizer().equals(this))
-         {
-            iterator.remove();
-            found = true;
-         }
+      if (!found) {
+          Iterator<Map.Entry<Transaction, Record>> iterator = records.entrySet().iterator();
+          while (!found && iterator.hasNext())
+          {
+             Map.Entry<Transaction, Record> next = iterator.next();
+             if (next.getValue().getTransactionSynchronizer().equals(this))
+             {
+                iterator.remove();
+                found = true;
+             }
+          }
       }
    }
 
